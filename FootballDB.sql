@@ -1,5 +1,9 @@
 ﻿CREATE DATABASE FootballDB;
 
+GO
+
+USE FootballDB;
+
 CREATE TABLE Championships(ID int IDENTITY (1,1) CONSTRAINT PK_Championships_ID PRIMARY KEY (ID), 
 Name nvarchar(255));
 
@@ -5380,3 +5384,45 @@ VALUES ('Sebastiano Esposito',
 12,
 7,
 4);
+GO
+-- some exemplary queries
+SELECT Managers.Name AS Manager, Countries.Name AS Country
+FROM Managers
+INNER JOIN Countries
+ON Countries.ID = Managers.CountryID;
+
+SELECT Footballers.Name AS Footballer, Footballers.StrongFoot, Footballers.Height, Footballers.Weight,
+Footballers.Age, Countries.Name AS Country, Positions.Name AS Position, Teams.Name AS Team
+FROM (((Footballers
+INNER JOIN Countries
+ON Countries.ID = Footballers.CountryID)
+INNER JOIN Positions
+ON Positions.ID = Footballers.PositionID)
+INNER JOIN Teams
+ON Teams.ID = Footballers.TeamID)
+WHERE Footballers.ID = 22;
+
+SELECT Footballers.Name AS Footballer, Footballers.StrongFoot, Footballers.Height, Footballers.Weight, 
+Footballers.Age, Countries.Name AS Country, Positions.Name AS Position, Teams.Name AS Team
+FROM Footballers, Countries, Positions, Teams
+WHERE Countries.ID = Footballers.CountryID AND
+Positions.ID = Footballers.PositionID
+AND Teams.ID = Footballers.TeamID
+AND Footballers.ID = 22;
+
+SELECT AVG(Footballers.Age) AS Age, Teams.Name AS Team
+FROM Footballers, Teams
+WHERE Teams.ID = Footballers.TeamID
+GROUP BY Teams.Name;
+
+SELECT Footballers.Name, Teams.Name AS Team, Footballers.Age
+FROM Footballers
+INNER JOIN
+(SELECT MIN(Age) AS MinAge, Footballers.TeamID
+FROM Footballers, Teams
+WHERE Footballers.TeamID = Teams.ID
+GROUP BY Footballers.TeamID) AS MinimumAgeAndTeamSubquery
+ON MinimumAgeAndTeamSubquery.TeamID = Footballers.TeamID AND 
+MinimumAgeAndTeamSubquery.MinAge = Footballers.Age 
+INNER JOIN Teams
+ON Teams.ID = MinimumAgeAndTeamSubquery.TeamID;
