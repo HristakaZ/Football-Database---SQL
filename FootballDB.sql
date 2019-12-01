@@ -5385,7 +5385,9 @@ VALUES ('Sebastiano Esposito',
 7,
 4);
 GO
+
 -- some exemplary queries
+
 SELECT Managers.Name AS Manager, Countries.Name AS Country
 FROM Managers
 INNER JOIN Countries
@@ -5426,3 +5428,57 @@ ON MinimumAgeAndTeamSubquery.TeamID = Footballers.TeamID AND
 MinimumAgeAndTeamSubquery.MinAge = Footballers.Age 
 INNER JOIN Teams
 ON Teams.ID = MinimumAgeAndTeamSubquery.TeamID;
+
+-- some exemplary views
+
+CREATE VIEW All_Argentinian_Footballers AS
+SELECT Footballers.Name AS Footballer, Countries.Name AS Country
+FROM Footballers
+INNER JOIN Countries
+ON Footballers.CountryID = Countries.ID
+WHERE Countries.Name = 'Argentina';
+
+SELECT * FROM All_Argentinian_Footballers;
+
+CREATE VIEW All_Spanish_Teams AS
+SELECT Teams.Name AS Team, Countries.Name AS Country
+FROM Teams
+INNER JOIN Countries
+ON Teams.CountryID = Countries.ID
+WHERE Countries.Name = 'Spain';
+
+SELECT * FROM All_Spanish_Teams;
+
+-- a case function (if we change one of the numbers, the result will change - "There's no such position
+-- will be displayed")
+
+SELECT CASE Positions.ID
+WHEN 1 THEN 'Goalkeeper'
+WHEN 2 THEN 'Defender'
+WHEN 3 THEN 'Midfielder'
+WHEN 4 THEN 'Striker'
+ELSE 'There''s no such position'
+END AS
+Position, Positions.ID
+FROM Positions;
+
+-- a stored procedure
+CREATE PROCEDURE Find_Footballer_Position @Footballer nvarchar(255)
+AS
+SELECT Footballers.Name AS Footballer, Positions.Name AS Position
+FROM Footballers
+INNER JOIN Positions
+ON Footballers.PositionID = Positions.ID
+WHERE @Footballer = Footballers.Name;
+
+EXEC Find_Footballer_Position @Footballer = 'Lionel Messi';
+
+CREATE PROCEDURE Find_Footballer_Position_By_His_ID @Footballer int
+AS
+SELECT Footballers.Name AS Footballer, Positions.Name AS Position
+FROM Footballers
+INNER JOIN Positions
+ON Footballers.PositionID = Positions.ID
+WHERE @Footballer = Footballers.ID;
+
+EXEC Find_Footballer_Position_By_His_ID @Footballer = 22;
