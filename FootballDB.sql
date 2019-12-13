@@ -34,8 +34,20 @@ TeamID int CONSTRAINT FK_Footballers_Teams_ID FOREIGN KEY REFERENCES Teams(ID),
 CountryID int CONSTRAINT FK_Footballers_Countries_ID FOREIGN KEY REFERENCES Countries(ID),
 PositionID int CONSTRAINT FK_Footballers_Positions_ID FOREIGN KEY REFERENCES Positions(ID));
 
+CREATE TABLE Fixtures(ID int IDENTITY (1,1) CONSTRAINT PK_Fixtures_ID PRIMARY KEY (ID),
+HostID int CONSTRAINT FK_Fixtures_HostTeam_Teams_ID FOREIGN KEY REFERENCES Teams(ID),
+GuestID int CONSTRAINT FK_Fixtures_GuestTeam_Teams_ID FOREIGN KEY REFERENCES Teams(ID),
+CONSTRAINT CHK_Fixtures_Team_Difference CHECK (HostID != GuestID));
+
+CREATE TABLE Goalscorers(ID int IDENTITY (1,1) CONSTRAINT PK_Goalscorers_ID PRIMARY KEY (ID),
+FixtureID int CONSTRAINT FK_Goalscorers_Fixtures_ID FOREIGN KEY REFERENCES Fixtures(ID),
+FootballerID int CONSTRAINT FK_Goalscorers_Footballers_ID FOREIGN KEY REFERENCES Footballers(ID),
+TeamID int CONSTRAINT FK_Goalscorers_Teams_ID FOREIGN KEY REFERENCES Teams(ID),
+Goals int);
+
 CREATE UNIQUE INDEX UI_Countries_Name ON Countries(Name);
 
+-- inserting championships
 INSERT INTO Championships (Name)
 VALUES ('Primera Division');
 
@@ -47,7 +59,7 @@ VALUES ('Bundesliga');
 
 INSERT INTO Championships (Name)
 VALUES ('Serie A');
-
+-- inserting countries
 INSERT INTO Countries (Name)
 VALUES ('Spain');
 
@@ -183,6 +195,7 @@ VALUES ('Macedonia');
 INSERT INTO Countries (Name)
 VALUES ('Slovakia');
 
+-- inserting managers
 INSERT INTO Managers (Name,
 Age,
 CountryID)
@@ -266,7 +279,7 @@ CountryID)
 VALUES ('Antonio Conte',
 50,
 7);
-
+-- inserting positions
 INSERT INTO Positions(Name)
 VALUES ('Goalkeeper');
 
@@ -278,7 +291,7 @@ VALUES ('Midfielder');
 
 INSERT INTO Positions(Name)
 VALUES ('Striker');
-
+-- inserting teams
 INSERT INTO Teams (Name,
 ChampionshipID,
 ManagerID,
@@ -386,7 +399,7 @@ VALUES ('Inter Milan',
 4,
 12,
 7);
-
+-- inserting footballers
 INSERT INTO Footballers(Name,
 Height,
 Weight,
@@ -5384,6 +5397,78 @@ VALUES ('Sebastiano Esposito',
 12,
 7,
 4);
+-- inserting fixtures
+INSERT INTO Fixtures (HostID,
+GuestID)
+VALUES (1,
+2);
+
+INSERT INTO Fixtures (HostID,
+GuestID)
+VALUES (1,
+3);
+-- inserting goalscorers
+INSERT INTO Goalscorers(FixtureID,
+FootballerID,
+TeamID,
+Goals)
+VALUES (1,
+22,
+1,
+3);
+
+INSERT INTO Goalscorers(FixtureID,
+FootballerID,
+TeamID,
+Goals)
+VALUES (1,
+43,
+2,
+2);
+
+INSERT INTO Goalscorers(FixtureID,
+FootballerID,
+TeamID,
+Goals)
+VALUES (2,
+22,
+1,
+3);
+
+INSERT INTO Goalscorers(FixtureID,
+FootballerID,
+TeamID,
+Goals)
+VALUES (2,
+70,
+3,
+1);
+-- some exemplary fixtures and goalscorers queries
+SELECT Footballers.Name, Goalscorers.Goals, Teams.Name AS Team
+FROM Footballers
+INNER JOIN Goalscorers
+ON Footballers.ID = Goalscorers.FootballerID
+INNER JOIN Teams
+ON Teams.ID = Footballers.TeamID
+WHERE FixtureID = 1;
+
+SELECT Footballers.Name, Goalscorers.Goals, Teams.Name AS Team, FixtureID AS Fixture
+FROM Footballers
+INNER JOIN Goalscorers
+ON Footballers.ID = Goalscorers.FootballerID
+INNER JOIN Teams
+ON Teams.ID = Footballers.TeamID
+WHERE FixtureID = 2;
+
+SELECT (SumOfGoals.Goals), SumOfGoals.FootballerID, Footballers.Name FROM
+
+	(SELECT TOP 1 SUM(Goals) AS Goals, FootballerID FROM Goalscorers
+	GROUP BY FootballerID
+	ORDER BY Goals DESC)AS SumOfGoals
+
+INNER JOIN Footballers
+ON Footballers.ID = SumOfGoals.FootballerID;
+
 GO
 
 -- some exemplary queries
@@ -5431,6 +5516,8 @@ ON Teams.ID = MinimumAgeAndTeamSubquery.TeamID;
 
 -- some exemplary views
 
+GO
+
 CREATE VIEW All_Argentinian_Footballers AS
 SELECT Footballers.Name AS Footballer, Countries.Name AS Country
 FROM Footballers
@@ -5438,7 +5525,11 @@ INNER JOIN Countries
 ON Footballers.CountryID = Countries.ID
 WHERE Countries.Name = 'Argentina';
 
+GO
+
 SELECT * FROM All_Argentinian_Footballers;
+
+GO
 
 CREATE VIEW All_Spanish_Teams AS
 SELECT Teams.Name AS Team, Countries.Name AS Country
@@ -5447,8 +5538,11 @@ INNER JOIN Countries
 ON Teams.CountryID = Countries.ID
 WHERE Countries.Name = 'Spain';
 
+GO
+
 SELECT * FROM All_Spanish_Teams;
 
+GO
 -- a case function (if we change one of the numbers, the result will change - "There's no such position
 -- will be displayed")
 
@@ -5463,6 +5557,9 @@ Position, Positions.ID
 FROM Positions;
 
 -- a stored procedure
+
+GO
+
 CREATE PROCEDURE Find_Footballer_Position @Footballer nvarchar(255)
 AS
 SELECT Footballers.Name AS Footballer, Positions.Name AS Position
@@ -5471,7 +5568,11 @@ INNER JOIN Positions
 ON Footballers.PositionID = Positions.ID
 WHERE @Footballer = Footballers.Name;
 
+GO
+
 EXEC Find_Footballer_Position @Footballer = 'Lionel Messi';
+
+GO
 
 CREATE PROCEDURE Find_Footballer_Position_By_His_ID @Footballer int
 AS
@@ -5481,4 +5582,8 @@ INNER JOIN Positions
 ON Footballers.PositionID = Positions.ID
 WHERE @Footballer = Footballers.ID;
 
+GO
+
 EXEC Find_Footballer_Position_By_His_ID @Footballer = 22;
+
+GO
