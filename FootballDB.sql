@@ -5444,7 +5444,7 @@ VALUES (2,
 3,
 1);
 -- some exemplary fixtures and goalscorers queries
-SELECT Footballers.Name, Goalscorers.Goals, Teams.Name AS Team
+SELECT Footballers.Name, Goalscorers.Goals, Teams.Name AS Team, FixtureID as Fixture
 FROM Footballers
 INNER JOIN Goalscorers
 ON Footballers.ID = Goalscorers.FootballerID
