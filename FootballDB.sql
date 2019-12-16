@@ -5469,6 +5469,12 @@ SELECT (SumOfGoals.Goals), SumOfGoals.FootballerID, Footballers.Name FROM
 INNER JOIN Footballers
 ON Footballers.ID = SumOfGoals.FootballerID;
 
+SELECT SUM(Goals) AS Result, Teams.Name AS Team, FixtureID AS Fixture
+FROM Teams
+INNER JOIN Goalscorers
+ON Teams.ID = Goalscorers.TeamID
+GROUP BY TeamID, FixtureID, Teams.Name;
+
 GO
 
 -- some exemplary queries
@@ -5513,7 +5519,6 @@ ON MinimumAgeAndTeamSubquery.TeamID = Footballers.TeamID AND
 MinimumAgeAndTeamSubquery.MinAge = Footballers.Age 
 INNER JOIN Teams
 ON Teams.ID = MinimumAgeAndTeamSubquery.TeamID;
-
 -- some exemplary views
 
 GO
